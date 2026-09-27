@@ -15,15 +15,12 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.rocs.osd.controller.dialog.ErrorDialogController;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import org.rocs.osd.data.dao.login.LoginDao;
 import org.rocs.osd.data.dao.login.impl.LoginDaoImpl;
 import org.rocs.osd.facade.login.LoginFacade;
 import org.rocs.osd.facade.login.impl.LoginFacadeImpl;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 
 public class ChangePasswordController {
 
@@ -36,13 +33,26 @@ public class ChangePasswordController {
      * Password field used to enter the user's new password.
      */
     @FXML
-    private PasswordField passwordField;
+    private PasswordField oldPasswordField;
+
+    /**
+     * Text field used to display the old password
+     * when password visibility is enabled.
+     */
+    @FXML
+    private TextField oldpasswordTextField;
+
+    /**
+     * Password field used to securely enter the new password.
+     */
+    @FXML
+    private PasswordField newPasswordField;
 
     /**
      * Text field used to display the password when visibility is enabled.
      */
     @FXML
-    private TextField passwordTextField;
+    private TextField newPasswordTextField;
 
     /**
      * Password field used to enter the confirmation password.
@@ -58,16 +68,16 @@ public class ChangePasswordController {
     private TextField confirmPasswordTextField;
 
     /**
-     * Text field used to enter the generated OTP code.
-     */
-    @FXML
-    private TextField otpCodeField;
-
-    /**
      * Button used to toggle password visibility.
      */
     @FXML
-    private Button togglePasswordButton;
+    private Button toggleOldPasswordButton;
+
+    /**
+     * Button used to toggle the visibility of the new password field.
+     */
+    @FXML
+    private Button toggleNewPasswordButton;
 
     /**
      * Button used to toggle confirmation password visibility.
@@ -76,46 +86,9 @@ public class ChangePasswordController {
     private Button toggleConfirmPasswordButton;
 
     /**
-     * Button used to generate or resend the OTP.
-     */
-    @FXML
-    private Button sendOtpButton;
-
-    /**
-     * Button used to cancel the password change process.
-     */
-    @FXML
-    private Button cancelButton;
-
-    /**
-     * Secure random generator used to generate OTP codes.
-     */
-    private final SecureRandom r = new SecureRandom();
-
-    /**
      * Facade used to handle login-related operations.
      */
     private LoginFacade loginFacade;
-
-    /**
-     * Indicates whether an OTP has been generated.
-     */
-    private boolean otpStatusSend = false;
-
-    /**
-     * Timeline used to control the OTP countdown.
-     */
-    private Timeline otpTimer;
-
-    /**
-     * Number of seconds before the OTP expires.
-     */
-    private int otpSeconds = 30;
-
-    /**
-     * Stores the currently generated OTP.
-     */
-    private String otpString;
 
     /**
      * Initializes the controller and its required dependencies.
@@ -129,39 +102,78 @@ public class ChangePasswordController {
     }
 
     /**
-     * Toggles the visibility of the password field.
+     * Toggles the visibility of the old password
+     * between a masked password field and a plain text field.
+     * note: suppress warning because of false positive pmd error.
+     */
+    @FXML
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
+    private void toggleOldPasswordVisibility() {
+
+        if (oldPasswordField == null || oldpasswordTextField == null
+                || toggleOldPasswordButton == null) {
+            return;
+        }
+
+        if (oldPasswordField.isVisible()) {
+
+            oldpasswordTextField.setText(oldPasswordField.getText());
+
+            oldPasswordField.setManaged(false);
+            oldPasswordField.setVisible(false);
+
+            oldpasswordTextField.setManaged(true);
+            oldpasswordTextField.setVisible(true);
+            toggleOldPasswordButton.getStyleClass().add("show-icon");
+
+        } else {
+
+            oldPasswordField.setText(oldpasswordTextField.getText());
+
+            oldpasswordTextField.setManaged(false);
+            oldpasswordTextField.setVisible(false);
+
+            oldPasswordField.setManaged(true);
+            oldPasswordField.setVisible(true);
+            toggleOldPasswordButton.getStyleClass().remove("show-icon");
+        }
+    }
+
+    /**
+     * Toggles the visibility of the new password
+     * between a masked password field and a plain text field.
      * note: suppress warning because of false positive pmd error.
      */
     @FXML
     @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void togglePasswordVisibility() {
 
-        if (passwordField == null || passwordTextField == null
-                || togglePasswordButton == null) {
+        if (newPasswordField == null || newPasswordTextField == null
+                || toggleNewPasswordButton == null) {
             return;
         }
 
-        if (passwordField.isVisible()) {
+        if (newPasswordField.isVisible()) {
 
-            passwordTextField.setText(passwordField.getText());
+            newPasswordTextField.setText(newPasswordField.getText());
 
-            passwordField.setManaged(false);
-            passwordField.setVisible(false);
+            newPasswordField.setManaged(false);
+            newPasswordField.setVisible(false);
 
-            passwordTextField.setManaged(true);
-            passwordTextField.setVisible(true);
-            togglePasswordButton.getStyleClass().add("show-icon");
+            newPasswordTextField.setManaged(true);
+            newPasswordTextField.setVisible(true);
+            toggleNewPasswordButton.getStyleClass().add("show-icon");
 
         } else {
 
-            passwordField.setText(passwordTextField.getText());
+            newPasswordField.setText(newPasswordTextField.getText());
 
-            passwordTextField.setManaged(false);
-            passwordTextField.setVisible(false);
+            newPasswordTextField.setManaged(false);
+            newPasswordTextField.setVisible(false);
 
-            passwordField.setManaged(true);
-            passwordField.setVisible(true);
-            togglePasswordButton.getStyleClass().remove("show-icon");
+            newPasswordField.setManaged(true);
+            newPasswordField.setVisible(true);
+            toggleNewPasswordButton.getStyleClass().remove("show-icon");
         }
     }
 
@@ -219,36 +231,27 @@ public class ChangePasswordController {
     }
 
     /**
-     * Generates a new OTP and starts the OTP countdown.
-     * note: suppress warning because of false positive pmd error.
-     */
-    @FXML
-    @SuppressWarnings("PMD.UnusedPrivateMethod")
-    private void sendOtp() {
-        otpStatusSend = true;
-        sendOtpButton.setDisable(true);
-        cancelButton.setDisable(true);
-
-        otpString = otpGenerator();
-        otpTimer();
-    }
-
-    /**
-     * Validates the entered information and changes the user's password.
-     * note: suppress warning because of false positive pmd error.
+     * Validates the password fields and attempts to change the user's password.
      *
-     * @param event action event triggered by the change password button
+     * @param event the action event triggered by the Change Password button
      */
     @FXML
     @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void changePassword(ActionEvent event) {
-        String password;
+        String oldPassword;
+        String newPassword;
         String confirmedPassword;
 
-        if (passwordField.isVisible()) {
-            password = passwordField.getText();
+        if (oldPasswordField.isVisible()) {
+            oldPassword = oldPasswordField.getText();
         } else {
-            password = passwordTextField.getText();
+            oldPassword = oldpasswordTextField.getText();
+        }
+
+        if (newPasswordField.isVisible()) {
+            newPassword = newPasswordField.getText();
+        } else {
+            newPassword = newPasswordTextField.getText();
         }
 
         if (confirmPasswordField.isVisible()) {
@@ -257,40 +260,27 @@ public class ChangePasswordController {
             confirmedPassword = confirmPasswordTextField.getText();
         }
 
-        if (!otpStatusSend) {
-            showErrorPopup("No OTP has been generated yet.");
+        if (newPassword.isBlank() || confirmedPassword.isBlank()) {
+            showErrorPopup("New Password and confirmation should have value");
             return;
         }
 
-        if (otpCodeField.getText().isBlank()) {
-            showErrorPopup("Pls Enter Given OTP.");
-            return;
-        }
-
-        if (password.isBlank() || confirmedPassword.isBlank()) {
-            showErrorPopup("Password and confirmation should have value");
-            return;
-        }
-
-        if (!password.equals(confirmedPassword)) {
+        if (!newPassword.equals(confirmedPassword)) {
             showErrorPopup("Password and confirmation password do not match.");
             return;
         }
 
-        boolean otpStatus = loginFacade.changePassword(
-                confirmedPassword,
-                otpString,
-                otpCodeField.getText()
+        boolean changePasswordStatus = loginFacade.changePassword(
+                oldPassword,
+                confirmedPassword
         );
 
-        if (!otpStatus) {
-            showErrorPopup("Invalid OTP");
+        if (!changePasswordStatus) {
+            showErrorPopup("Old Password is not the same");
             return;
         }
 
         toLogin(event);
-        otpString = "";
-        otpTimer.stop();
     }
 
     /**
@@ -324,53 +314,6 @@ public class ChangePasswordController {
     }
 
     /**
-     * Starts the OTP countdown timer and enables OTP resend after expiration.
-     */
-    private void otpTimer() {
-        otpSeconds = 30;
-        sendOtpButton.setText("Resend OTP (" + otpSeconds + ")");
-
-        otpTimer = new Timeline(
-                new KeyFrame(Duration.seconds(1), event -> {
-                    otpSeconds--;
-
-                    if (otpSeconds <= 0) {
-                        otpTimer.stop();
-                        sendOtpButton.setText("Resend OTP");
-
-                        sendOtpButton.setDisable(false);
-                        cancelButton.setDisable(false);
-                        otpString = "";
-                    } else {
-                        sendOtpButton.setText(
-                                "Resend OTP (" + otpSeconds + ")"
-                        );
-
-                    }
-                })
-        );
-        otpTimer.setCycleCount(Timeline.INDEFINITE);
-        otpTimer.play();
-    }
-
-    /**
-     * Generates a six-character random OTP containing letters and numbers.
-     *
-     * @return generated six-character OTP
-     */
-    private String otpGenerator() {
-        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        StringBuilder otp = new StringBuilder(6);
-
-        for (int i = 0; i < 6; i++) {
-            int index = r.nextInt(characters.length());
-            otp.append(characters.charAt(index));
-        }
-
-        return otp.toString();
-    }
-
-    /**
      * Displays a temporary error popup at the bottom of the screen.
      *
      * @param message the message to display in the error dialog
@@ -396,7 +339,8 @@ public class ChangePasswordController {
             errorStage.initStyle(StageStyle.TRANSPARENT);
             errorStage.initModality(Modality.NONE);
 
-            Stage mainStage = (Stage) otpCodeField.getScene().getWindow();
+            Stage mainStage =
+                    (Stage) confirmPasswordField.getScene().getWindow();
 
             double popupWidth = 400;
             double popupHeight = 70;

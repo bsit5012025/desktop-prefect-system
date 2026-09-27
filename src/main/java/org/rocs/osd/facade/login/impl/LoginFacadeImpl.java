@@ -81,40 +81,55 @@ public class LoginFacadeImpl implements LoginFacade {
     }
 
     /**
-     * Changes the user's password after validating the new password
-     * and verifying the entered OTP.
-     * The method returns false if the new password is blank
-     * or if the entered OTP does not match the generated OTP.
-     * If both validations are successful, the new password is passed
-     * to the login DAO for updating.
+     * Changes the user's password after validating the provided passwords
+     * and verifying the old password against the stored password hash.
+     * The method returns false if either password is null or blank,
+     * if the user account cannot be found, if the stored password is invalid,
+     * or if the provided old password does not match the stored password.
+     * If validation is successful, the new password is securely hashed
+     * before being passed to the login DAO for updating.
      *
-     * @param changePassword the new password to be set
-     * @param generatedOtp the OTP generated for password verification
-     * @param enteredOtp the OTP entered by the user
-     * @return true if the password and OTP are valid and the
-     *         password change is processed. false otherwise
+     * @param oldPassword the user's current password
+     * @param newPassword the new password to set
+     * @return true if the password is successfully changed;
+     *         false otherwise
      */
     @Override
-    public boolean changePassword(String changePassword,
-                                  String generatedOtp,
-                                  String enteredOtp
+    public boolean changePassword(
+            String oldPassword,
+            String newPassword
     ) {
-        if (changePassword.isBlank()
-                || generatedOtp.isBlank()
-                || enteredOtp.isBlank()
+        if (oldPassword == null
+                || newPassword == null
+                || oldPassword.isBlank()
+                || newPassword.isBlank()
         ) {
             return false;
         }
 
-        if (!generatedOtp.equals(enteredOtp)) {
+        Login login = loginDao.findLoginByUsername("prefect");
+
+        if (login == null || login.getPassword() == null
+                || login.getPassword().isBlank()) {
+            return false;
+        }
+
+        String storedHash = login.getPassword();
+
+        if (storedHash.startsWith("$2b$") || storedHash.startsWith("$2y$")) {
+            storedHash = "$2a$" + storedHash.substring(4);
+        }
+
+        if (!BCrypt.checkpw(oldPassword, storedHash)) {
             return false;
         }
 
         String hashedPassword = BCrypt.hashpw(
-                changePassword,
+                newPassword,
                 BCrypt.gensalt(12)
         );
 
         return loginDao.changePassword(hashedPassword);
     }
+
 }
