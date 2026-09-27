@@ -3,6 +3,7 @@ package org.rocs.osd.facade.login.impl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mindrot.jbcrypt.BCrypt;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.rocs.osd.data.dao.login.LoginDao;
@@ -67,13 +68,21 @@ class LoginFacadeImplTest
 
     @Test
     void changePassword_ShouldReturnTrue_WhenPasswordAndOtpAreValid() {
+        String oldPassword = "OldPassword123";
+        String newPassword = "NewPassword123";
+
+        Login login = new Login();
+        login.setPassword(BCrypt.hashpw(oldPassword, BCrypt.gensalt(12)));
+
+        when(loginDao.findLoginByUsername("prefect"))
+                .thenReturn(login);
+
         when(loginDao.changePassword(anyString()))
                 .thenReturn(true);
 
         boolean result = loginFacade.changePassword(
-                "NewPassword123",
-                "ABC123",
-                "ABC123"
+                oldPassword,
+                newPassword
         );
 
         assertTrue(result);
