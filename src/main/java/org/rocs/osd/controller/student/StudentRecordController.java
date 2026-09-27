@@ -96,7 +96,7 @@ public class StudentRecordController {
      * selected value on statusComboBox.
      */
     @FXML
-    private CheckBox statusSave;
+    private CheckBox statusSaveCheckbox;
 
     /** Table for history offense. */
     @FXML
@@ -160,6 +160,17 @@ public class StudentRecordController {
         if (gradeComboBox != null) {
             gradeComboBox.setOnAction(event ->
                     setOffenseDataByStudentLevel());
+        }
+
+        if (statusComboBox != null) {
+            statusComboBox.valueProperty().addListener(
+                    (observable, oldValue, newValue) -> {
+                        if (oldValue != null
+                                && !oldValue.equals(newValue)) {
+                            statusSaveCheckbox.setSelected(false);
+                        }
+                    }
+            );
         }
     }
 
@@ -344,8 +355,11 @@ public class StudentRecordController {
             }
         }
 
+        statusSaveCheckbox.setSelected(false);
+
         internCheckBox.setMouseTransparent(true);
         externCheckBox.setMouseTransparent(true);
+        statusSaveCheckbox.setMouseTransparent(true);
 
         if ("Intern".equalsIgnoreCase(studentType)) {
             internCheckBox.setSelected(true);
@@ -574,6 +588,7 @@ public class StudentRecordController {
      * Downloads the selected student data to desired directory.
      * Automatically opens file when the user downloads the PDF.
      */
+    @FXML
     public void onDownload() {
         if (downloadHandler != null) {
             downloadHandler.run();
@@ -612,14 +627,13 @@ public class StudentRecordController {
                         contactNumberTextField.getText());
                 parameters.put("guardianAddress", addressTextField.getText());
 
-                String status = "";
-                if (statusSave.isSelected()) {
-                    status = statusComboBox.getValue();
+                if (statusSaveCheckbox.isSelected()) {
+                    parameters.put("status", statusComboBox.getValue());
                 } else {
-                    status = enrollment.getDisciplinaryStatus()
-                            .getStatus();
+                    parameters.put("status", enrollment
+                            .getDisciplinaryStatus()
+                            .getStatus());
                 }
-                parameters.put("status", status);
 
                 parameters.put("internCheckBox",
                         internCheckBox.isSelected() ? "X" : "");
@@ -678,33 +692,8 @@ public class StudentRecordController {
      *
      * @param event the action event
      */
+    @FXML
     public void onCancel(ActionEvent event) {
-        if (statusSave.isSelected()
-                && arrayStatus != null
-                && statusComboBox.getValue() != null
-                && enrollment != null) {
-
-            for (DisciplinaryStatus status : arrayStatus) {
-                if (statusComboBox
-                        .getValue()
-                        .equals(status.getStatus())) {
-
-                    selectedStatus(
-                            status.getDisciplinaryStatusId(),
-                            enrollment.getStudent()
-                                    .getStudentId(),
-                            enrollment.getSchoolYear()
-                    );
-
-                    break;
-                }
-            }
-
-            if (studentController != null) {
-                studentController.refreshTable();
-            }
-        }
-
         Stage stage =
                 (Stage) ((Node) event.getSource())
                         .getScene()
@@ -712,4 +701,45 @@ public class StudentRecordController {
 
         stage.close();
     }
+
+    /**
+     * Save the set Status made by the prefect, on
+     * a particular student.
+     *
+     * @param e action event for the button
+     */
+    @FXML
+    public void saveStatus(ActionEvent e) {
+        if (enrollment == null
+                || arrayStatus == null
+                || statusComboBox.getValue() == null
+                || statusComboBox.getValue().isBlank()) {
+            return;
+        }
+
+        for (DisciplinaryStatus status : arrayStatus) {
+            if (statusComboBox.getValue().equals(status.getStatus())) {
+
+                selectedStatus(
+                        status.getDisciplinaryStatusId(),
+                        enrollment.getStudent().getStudentId(),
+                        enrollment.getSchoolYear()
+                );
+
+                enrollment.setDisciplinaryStatus(status);
+
+                statusSaveCheckbox.setSelected(true);
+
+                if (studentController != null) {
+                    studentController.refreshTable();
+                }
+
+                return;
+            }
+        }
+
+        statusSaveCheckbox.setSelected(false);
+
+    }
+
 }
