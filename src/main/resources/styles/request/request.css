@@ -211,3 +211,44 @@
     -fx-font-size: 16px;
     -fx-padding: 2 0 0 0;
 }
+
+/* =========================================================================
+   AI SUGGESTION BADGE (appeal/request card)
+   ========================================================================= */
+.aiSuggestionBox {
+    -fx-padding: 8;
+    -fx-background-radius: 6;
+    -fx-spacing: 2;
+}
+
+.aiSuggestionLabel {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.aiReasoningText {
+    -fx-font-size: 13px;
+    -fx-text-fill: #333333;
+    -fx-font-style: italic;
+}
+
+.aiApprovable {
+    -fx-background-color: #DCF5E3;
+}
+.aiApprovable .aiSuggestionLabel {
+    -fx-text-fill: #1A7945;
+}
+
+.aiDeniable {
+    -fx-background-color: #FBDFDF;
+}
+.aiDeniable .aiSuggestionLabel {
+    -fx-text-fill: #C22B2B;
+}
+
+.aiUncertain {
+    -fx-background-color: #F0F0F0;
+}
+.aiUncertain .aiSuggestionLabel {
+    -fx-text-fill: #666666;
+}

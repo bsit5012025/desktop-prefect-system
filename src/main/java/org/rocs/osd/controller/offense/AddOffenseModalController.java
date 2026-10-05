@@ -40,6 +40,7 @@ import org.rocs.osd.model.person.guardian.Guardian;
 import org.rocs.osd.model.person.student.Student;
 import org.rocs.osd.model.person.student.guardian.StudentGuardian;
 import org.rocs.osd.facade.guardian.GuardianFacade;
+import org.rocs.osd.session.Session;
 import static org.rocs.osd.controller.sms.SmsService.formatPhone;
 
 import java.io.IOException;
@@ -377,9 +378,21 @@ public class AddOffenseModalController {
             long aId = disciplinaryActionDao.findActionIdByName(aName);
             long eId = enrollmentDao.findEnrollmentIdByStudentId(sId);
 
+            // Attribute the record to whichever Prefect is actually
+            // logged in, instead of always crediting the same hardcoded
+            // employee regardless of who filed it.
+            if (Session.getEmployee() == null
+                    || Session.getEmployee().getEmployeeId() == null) {
+                System.out.println(
+                        "Cannot record violation: no employee is logged "
+                                + "in for this session.");
+                return;
+            }
+            String reportingEmployeeId = Session.getEmployee().getEmployeeId();
+
             boolean success = recordFacade.createStudentRecord(
                     eId,
-                    "EMP-002",
+                    reportingEmployeeId,
                     oId,
                     dOv,
                     aId,

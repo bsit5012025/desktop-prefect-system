@@ -76,6 +76,12 @@ public class LoginDaoImpl implements LoginDao {
                 }
             }
         } catch (SQLException e) {
+            // Don't swallow this -- a failed DB connection/query looked
+            // identical to a wrong password (both silently returned an
+            // empty Login), which made "invalid username or password"
+            // misleading when the real cause was a connectivity problem.
+            // Surface it so the caller (and the UI) can tell the
+            // difference.
             throw new RuntimeException(
                     "Database error while looking up user \"" + username
                             + "\": " + e.getMessage(), e);

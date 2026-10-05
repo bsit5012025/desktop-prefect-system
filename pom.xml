@@ -101,6 +101,9 @@
             <version>6.20.6</version>
         </dependency>
 
+        <!-- Passwords in the `login` table are BCrypt hashes (matching the
+             backend's Spring Security BCryptPasswordEncoder), so the desktop
+             needs a real BCrypt check, not a plain String.equals(). -->
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
@@ -125,10 +128,9 @@
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
-                <executions>
-
-
-                </executions>
+                <configuration>
+                    <mainClass>org.rocs.osd/org.rocs.osd.OfficeOfStudentDisciplineApplication</mainClass>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

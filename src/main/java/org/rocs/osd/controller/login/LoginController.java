@@ -118,6 +118,11 @@ public class LoginController {
         }
 
         String user = usernameTextField.getText();
+        // Read from whichever password field is actually visible --
+        // togglePasswordVisibility() only syncs the two fields at the
+        // moment the eye icon is clicked, not while typing, so if the
+        // user typed after toggling to "show password", passwordField
+        // itself would still hold stale (often blank) text.
         String pass = (passwordField != null && passwordField.isVisible())
                 ? passwordField.getText()
                 : passwordTextField.getText();

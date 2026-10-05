@@ -85,6 +85,10 @@ public class RequestDaoImpl implements RequestDao {
                     r.setDateProcessed(rs.getDate("dateProcessed"));
                     r.setRemarks(rs.getString("remarks"));
                     r.setStatus(RequestStatus.valueOf(rs.getString("status")));
+                    r.setAiResponse(rs.getString("aiResponse"));
+                    r.setAiRecommendation(rs.getString("aiRecommendation"));
+                    r.setAiReasoning(rs.getString("aiReasoning"));
+                    r.setDeliveryMethod(rs.getString("deliveryMethod"));
 
                     requestList.add(r);
                 }

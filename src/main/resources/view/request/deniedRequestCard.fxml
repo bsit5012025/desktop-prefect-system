@@ -27,8 +27,21 @@
                     <Label fx:id="typeLabel" styleClass="dataLabel" />
                 </HBox>
 
+                <Label styleClass="boldLabel" text="Students: " />
+                <Label fx:id="studentsLabel" styleClass="reasonText" wrapText="true" />
+
+                <HBox styleClass="labelRow">
+                    <Label styleClass="boldLabel" text="Delivery: " />
+                    <Label fx:id="deliveryLabel" styleClass="dataLabel" />
+                </HBox>
+
                 <Label styleClass="boldLabel" text="Reason for Request: " />
                 <Label fx:id="reasonLabel" styleClass="reasonText" text="Just give me a reason..." wrapText="true" />
+
+                <VBox fx:id="aiSuggestionBox" managed="false" styleClass="aiSuggestionBox" visible="false">
+                    <Label fx:id="aiRecommendationLabel" styleClass="aiSuggestionLabel" />
+                    <Label fx:id="aiReasoningLabel" styleClass="aiReasoningText" wrapText="true" />
+                </VBox>
 
                 <VBox spacing="5" styleClass="commentContainer">
                     <Label styleClass="boldLabel" text="Comment:" />
