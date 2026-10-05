@@ -28,22 +28,21 @@ public interface LoginFacade {
     Login getByUsername(String username);
 
     /**
-     * Changes the user's password after validating the new password
-     * and verifying the entered OTP.
-     * The method returns false if the new password is blank
-     * or if the entered OTP does not match the generated OTP.
-     * If both validations are successful, the new password is passed
-     * to the login DAO for updating.
+     * Changes the user's password after validating the provided passwords
+     * and verifying the old password against the stored password hash.
+     * The method returns false if either password is null or blank,
+     * if the user account cannot be found, if the stored password is invalid,
+     * or if the provided old password does not match the stored password.
+     * If validation is successful, the new password is securely hashed
+     * before being passed to the login DAO for updating.
      *
-     * @param changePassword the new password to be set
-     * @param generatedOtp the OTP generated for password verification
-     * @param enteredOtp the OTP entered by the user
-     * @return true if the password and OTP are valid and the
-     *         password change is processed. false otherwise
+     * @param oldPassword the user's current password
+     * @param newPassword the new password to set
+     * @return true if the password is successfully changed;
+     *         false otherwise
      */
     boolean changePassword(
-            String changePassword,
-            String generatedOtp,
-            String enteredOtp
+            String oldPassword,
+            String newPassword
     );
 }
