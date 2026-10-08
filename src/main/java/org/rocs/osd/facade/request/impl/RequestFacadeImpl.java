@@ -40,7 +40,9 @@ public class RequestFacadeImpl implements RequestFacade {
      */
     @Override
     public boolean addRequest(String employeeID,
-    String details, String message, String type) {
+                              String details,
+                              String message,
+                              String type) {
         boolean status = validateString(employeeID, 10, false)
                 && validateString(details, 100, false)
                 && validateString(message, 500, true)
@@ -64,7 +66,8 @@ public class RequestFacadeImpl implements RequestFacade {
      * @return true if valid, false otherwise.
      */
     private boolean validateString(String s,
-    int maxLength, boolean allowsNull) {
+                                   int maxLength,
+                                   boolean allowsNull) {
         if (allowsNull) {
             return !(s != null && s.length() > maxLength);
         } else {
