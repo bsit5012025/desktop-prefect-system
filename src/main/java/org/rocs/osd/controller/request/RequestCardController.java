@@ -2,6 +2,8 @@ package org.rocs.osd.controller.request;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
+
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -236,7 +238,7 @@ public class RequestCardController {
             return;
         }
         if (deliveryMethod != null
-                && deliveryMethod.toUpperCase().startsWith("EMAIL")) {
+                && deliveryMethod.toUpperCase(Locale.ROOT).startsWith("EMAIL")) {
             int sep = deliveryMethod.indexOf(':');
             String address = sep >= 0 ? deliveryMethod.substring(sep + 1) : "";
             deliveryLabel.setText(address.isEmpty()

@@ -3,6 +3,7 @@ package org.rocs.osd.controller.appeal;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Locale;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -29,6 +30,7 @@ import org.rocs.osd.model.document.Document;
 import org.rocs.osd.model.enrollment.Enrollment;
 import org.rocs.osd.model.person.student.Student;
 import org.rocs.osd.model.record.Record;
+
 
 /**
  * Controller class for managing the UI behavior
@@ -560,7 +562,7 @@ public class AppealCardController {
             return;
         }
 
-        String normalized = recommendation.trim().toUpperCase();
+        String normalized = recommendation.trim().toUpperCase(Locale.ROOT);
         aiSuggestionBox.getStyleClass().removeAll(
                 "aiApprovable", "aiDeniable", "aiUncertain");
 

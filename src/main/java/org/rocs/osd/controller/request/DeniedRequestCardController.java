@@ -7,6 +7,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 
+import java.util.Locale;
+
 /**
  * Controller for handling approved request card behavior.
  */
@@ -165,7 +167,7 @@ public class DeniedRequestCardController {
             return;
         }
 
-        String normalized = recommendation.trim().toUpperCase();
+        String normalized = recommendation.trim().toUpperCase(Locale.ROOT);
         aiSuggestionBox.getStyleClass().removeAll(
                 "aiApprovable", "aiDeniable", "aiUncertain");
 
@@ -239,7 +241,7 @@ public class DeniedRequestCardController {
             return;
         }
         if (deliveryMethod != null
-                && deliveryMethod.toUpperCase().startsWith("EMAIL")) {
+                && deliveryMethod.toUpperCase(Locale.ROOT).startsWith("EMAIL")) {
             int sep = deliveryMethod.indexOf(':');
             String address = sep >= 0 ? deliveryMethod.substring(sep + 1) : "";
             deliveryLabel.setText(address.isEmpty()

@@ -3,6 +3,8 @@ package org.rocs.osd.controller.appeal;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Locale;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
@@ -286,7 +288,7 @@ public class DeniedAppealCardController {
             return;
         }
 
-        String normalized = recommendation.trim().toUpperCase();
+        String normalized = recommendation.trim().toUpperCase(Locale.ROOT);
         aiSuggestionBox.getStyleClass().removeAll(
                 "aiApprovable", "aiDeniable", "aiUncertain");
 

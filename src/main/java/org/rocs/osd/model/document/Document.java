@@ -6,6 +6,7 @@ package org.rocs.osd.model.document;
  */
 public class Document {
 
+
     /** Unique identifier for the document. */
     private long documentId;
 
@@ -20,14 +21,6 @@ public class Document {
 
     /** Raw file bytes of the uploaded document. */
     private byte[] fileData;
-
-    /**
-     * Default constructor initializing an
-     * empty Document object.
-     */
-    public Document() {
-
-    }
 
     /** @return the unique identifier of this document. */
     public long getDocumentId() {
