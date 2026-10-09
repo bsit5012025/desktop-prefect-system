@@ -34,6 +34,24 @@ public class Request {
     /** Remarks of the person approving or denying the request. */
     private String remarks;
 
+    /**
+     * Informational AI-generated summary of
+     * the matching records (not a recommendation).
+     * */
+    private String aiResponse;
+
+    /** AI suggestion for this request: APPROVABLE, DENIABLE, or UNCERTAIN. */
+    private String aiRecommendation;
+
+    /** Short AI-generated reasoning behind the recommendation. */
+    private String aiReasoning;
+
+    /** How the department head wants the result: HARDCOPY or EMAIL. */
+    private String deliveryMethod;
+
+    /** Gmail address to send the result to when delivery is EMAIL. */
+    private String deliveryEmail;
+
     /** Default constructor initializing an empty Request object. */
     public Request() {
         // Default constructor
@@ -151,6 +169,74 @@ public class Request {
      */
     public void setRemarks(String pRemarks) {
         this.remarks = pRemarks;
+    }
+
+    /**
+     * @return the informational AI-generated summary of
+     * the matching records.
+     */
+    public String getAiResponse() {
+        return aiResponse;
+    }
+
+    /**
+     * @param pAiResponse sets the informational AI-generated
+     *                     summary of the matching records.
+     */
+    public void setAiResponse(String pAiResponse) {
+        this.aiResponse = pAiResponse;
+    }
+
+    /**
+     * @return the AI recommendation for this request
+     *  (APPROVABLE / DENIABLE / UNCERTAIN), or null.
+     */
+    public String getAiRecommendation() {
+        return aiRecommendation;
+    }
+
+    /** @param pAiRecommendation sets the AI recommendation for this request. */
+    public void setAiRecommendation(String pAiRecommendation) {
+        this.aiRecommendation = pAiRecommendation;
+    }
+
+    /**
+     * @return how the requester wants the result
+     * (HARDCOPY or EMAIL), or null.
+     */
+    public String getDeliveryMethod() {
+        return deliveryMethod;
+    }
+
+    /** @return the Gmail address for EMAIL delivery, or null. */
+    public String getDeliveryEmail() {
+        return deliveryEmail;
+    }
+
+    /** @param pDeliveryEmail sets the Gmail address for EMAIL delivery. */
+    public void setDeliveryEmail(String pDeliveryEmail) {
+        this.deliveryEmail = pDeliveryEmail;
+    }
+
+    /** @param pDeliveryMethod sets how the requester wants the result. */
+    public void setDeliveryMethod(String pDeliveryMethod) {
+        this.deliveryMethod = pDeliveryMethod;
+    }
+
+    /**
+     * @return the short AI-generated reasoning behind
+     *  the recommendation, or null.
+     */
+    public String getAiReasoning() {
+        return aiReasoning;
+    }
+
+    /**
+     * @param pAiReasoning sets the AI-generated reasoning behind
+     *                       the recommendation.
+     */
+    public void setAiReasoning(String pAiReasoning) {
+        this.aiReasoning = pAiReasoning;
     }
 
 }

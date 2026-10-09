@@ -35,6 +35,24 @@ public class Appeal {
     /** Message or remarks for the denying the appeal. */
     private String remarks;
 
+    /** AI suggestion for this appeal: APPROVABLE, DENIABLE, or UNCERTAIN. */
+    private String aiRecommendation;
+
+    /**
+     * Short AI-generated reasoning behind the recommendation,
+     * grounded in the Student Handbook.
+     */
+    private String aiReasoning;
+
+    /**
+     * ID of the uploaded appeal letter document, or null
+     * if none was attached.
+     */
+    private Long documentId;
+
+    /** Whether the student edited this appeal's message after filing it. */
+    private boolean edited;
+
     /** Default constructor to initialize an empty Appeal object. */
     public Appeal() {
         // Default constructor
@@ -161,5 +179,62 @@ public class Appeal {
     /** @param pRemarks sets the remark message for deny button. */
     public void setRemarks(String pRemarks) {
         this.remarks = pRemarks;
+    }
+
+    /**
+     * @return the AI recommendation for this appeal
+     * (APPROVABLE / DENIABLE / UNCERTAIN), or null.
+     */
+    public String getAiRecommendation() {
+        return aiRecommendation;
+    }
+
+    /** @param pAiRecommendation sets the AI recommendation for this appeal. */
+    public void setAiRecommendation(String pAiRecommendation) {
+        this.aiRecommendation = pAiRecommendation;
+    }
+
+    /**
+     * @return the short AI-generated reasoning behind
+     *  the recommendation, or null.
+     */
+    public String getAiReasoning() {
+        return aiReasoning;
+    }
+
+    /**
+     * @param pAiReasoning sets the AI-generated reasoning
+     *                     behind the recommendation.
+     */
+    public void setAiReasoning(String pAiReasoning) {
+        this.aiReasoning = pAiReasoning;
+    }
+
+    /**
+     * @return the ID of the uploaded appeal letter document,
+     * or null if none was attached.
+     */
+    public Long getDocumentId() {
+        return documentId;
+    }
+
+    /** @param pDocumentId sets the ID of the uploaded appeal
+     *                      letter document.
+     */
+    public void setDocumentId(Long pDocumentId) {
+        this.documentId = pDocumentId;
+    }
+
+    /**
+     * @return whether the student edited this appeal's
+     * message after filing it.
+     */
+    public boolean isEdited() {
+        return edited;
+    }
+
+    /** @param pEdited sets whether the student edited this appeal's message. */
+    public void setEdited(boolean pEdited) {
+        this.edited = pEdited;
     }
 }

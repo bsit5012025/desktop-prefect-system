@@ -1,5 +1,9 @@
 package org.rocs.osd.controller.appeal;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Locale;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,10 +23,14 @@ import javafx.util.Duration;
 import org.rocs.osd.controller.dialog.ConfirmationDialogController;
 import org.rocs.osd.facade.appeal.AppealFacade;
 import org.rocs.osd.facade.appeal.impl.AppealFacadeImpl;
+import org.rocs.osd.facade.document.DocumentFacade;
+import org.rocs.osd.facade.document.impl.DocumentFacadeImpl;
 import org.rocs.osd.model.appeal.Appeal;
+import org.rocs.osd.model.document.Document;
 import org.rocs.osd.model.enrollment.Enrollment;
 import org.rocs.osd.model.person.student.Student;
 import org.rocs.osd.model.record.Record;
+
 
 /**
  * Controller class for managing the UI behavior
@@ -54,14 +62,17 @@ public class AppealCardController {
     /** Default provider that shows a real popup dialog. */
     private static final ConfirmationProvider DEFAULT_PROVIDER =
             (l1, l2, confirmTxt, cancelTxt, onConfirm, onCancel) -> {
-    try {
-        FXMLLoader loader = new FXMLLoader(
-              java.util.Objects.requireNonNull(
-                   AppealCardController.class
-                           .getResource("/view/dialogs/confirmation.fxml"),
-                      "Cannot find confirmation.fxml"
-                )
-         );
+                try {
+                    FXMLLoader loader = new FXMLLoader(
+                            java.util.Objects.requireNonNull(
+                                    AppealCardController.class
+                                            .getResource(
+                                                    "/view/dialogs/"
+                                                   + "confirmation.fxml"
+                                            ),
+                                    "Cannot find confirmation.fxml"
+                            )
+                    );
                     StackPane rootNode = loader.load();
                     ConfirmationDialogController controller =
                             loader.getController();
@@ -126,6 +137,21 @@ public class AppealCardController {
     /** The reason label. */
     @FXML
     private Label reasonLabel;
+    /** Container for the AI suggestion badge. */
+    @FXML
+    private VBox aiSuggestionBox;
+    /** The AI recommendation label (APPROVABLE / DENIABLE / UNCERTAIN). */
+    @FXML
+    private Label aiRecommendationLabel;
+    /** The AI reasoning label. */
+    @FXML
+    private Label aiReasoningLabel;
+    /** Button to view the attached appeal letter, if any. */
+    @FXML
+    private Button viewLetterButton;
+    /** Badge shown when the student edited this appeal after filing it. */
+    @FXML
+    private Label editedBadge;
     /** The arrow icon ImageView. */
     @FXML
     private ImageView arrowIcon;
@@ -153,6 +179,8 @@ public class AppealCardController {
     private boolean isExpanded = false;
     /** The appeal facade. */
     private AppealFacade appealFacade;
+    /** The document facade, used to fetch attached appeal letters. */
+    private DocumentFacade documentFacade;
     /** Timer used to automatically dismiss the error banner. */
     private PauseTransition errorHideDelay;
 
@@ -179,6 +207,18 @@ public class AppealCardController {
         }
         if (inlineErrorText != null) {
             inlineErrorText.setText("");
+        }
+        if (aiSuggestionBox != null) {
+            aiSuggestionBox.setVisible(false);
+            aiSuggestionBox.setManaged(false);
+        }
+        if (viewLetterButton != null) {
+            viewLetterButton.setVisible(false);
+            viewLetterButton.setManaged(false);
+        }
+        if (editedBadge != null) {
+            editedBadge.setVisible(false);
+            editedBadge.setManaged(false);
         }
         if (arrowButton != null) {
             arrowButton.setMinSize(30, 30);
@@ -216,6 +256,18 @@ public class AppealCardController {
             appealFacade = new AppealFacadeImpl();
         }
         return appealFacade;
+    }
+
+    /**
+     * Gets the document facade, creating default if not set.
+     *
+     * @return the document facade
+     */
+    private DocumentFacade getDocumentFacade() {
+        if (documentFacade == null) {
+            documentFacade = new DocumentFacadeImpl();
+        }
+        return documentFacade;
     }
 
     /**
@@ -391,7 +443,154 @@ public class AppealCardController {
             if (reasonLabel != null) {
                 reasonLabel.setText(appeal.getMessage());
             }
+            displayAiSuggestion(
+                    appeal.getAiRecommendation(),
+                    appeal.getAiReasoning());
+            displayLetterButton(appeal.getDocumentId());
+            displayEditedBadge(appeal.isEdited());
         }
+    }
+
+    /**
+     * Shows or hides the "Edited" badge depending on whether the
+     * student edited this appeal's message after filing it.
+     *
+     * @param edited whether the appeal was edited
+     */
+    private void displayEditedBadge(boolean edited) {
+        if (editedBadge == null) {
+            return;
+        }
+        editedBadge.setVisible(edited);
+        editedBadge.setManaged(edited);
+    }
+
+    /**
+     * Shows or hides the "View Letter" button depending on whether
+     * this appeal has an attached letter document on file.
+     *
+     * @param documentId the ID of the attached document, or null
+     */
+    private void displayLetterButton(Long documentId) {
+        if (viewLetterButton == null) {
+            return;
+        }
+        boolean hasLetter = documentId != null;
+        viewLetterButton.setVisible(hasLetter);
+        viewLetterButton.setManaged(hasLetter);
+    }
+
+    /**
+     * Opens the appeal's attached letter in the user's default
+     * viewer (PDF reader, image viewer, Word, etc.), by writing the
+     * stored file bytes to a temp file and asking the OS to open it.
+     */
+    @FXML
+    public void onViewLetter() {
+        if (appeal == null || appeal.getDocumentId() == null) {
+            return;
+        }
+
+        try {
+            Document document = getDocumentFacade()
+                    .getDocumentById(appeal.getDocumentId());
+
+            if (document == null || document.getFileData() == null) {
+                showError("The attached letter could not be found.");
+                return;
+            }
+
+            File tempFile = File.createTempFile(
+                    "appeal-letter-" + document.getDocumentId() + "-",
+                    fileSuffix(document.getFileName(),
+                               document.getContentType()));
+            tempFile.deleteOnExit();
+
+            try (FileOutputStream out = new FileOutputStream(tempFile)) {
+                out.write(document.getFileData());
+            }
+
+            Desktop.getDesktop().open(tempFile);
+
+        } catch (Exception e) {
+            showError("Could not open the attached letter: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Determines a file suffix (with leading dot) to use for the temp
+     * file, so the OS opens it with the correct default application.
+     *
+     * @param fileName    the original filename, or null
+     * @param contentType the MIME content type, or null
+     * @return a file suffix such as ".pdf", never null
+     */
+    private String fileSuffix(String fileName, String contentType) {
+        if (fileName != null && fileName.contains(".")) {
+            return fileName.substring(fileName.lastIndexOf('.'));
+        }
+        if (contentType != null) {
+            return switch (contentType) {
+                case "application/pdf" -> ".pdf";
+                case "image/jpeg" -> ".jpg";
+                case "image/png" -> ".png";
+                case "application/msword" -> ".doc";
+                case "application/vnd.openxmlformats-officedocument."
+                            + "wordprocessingml.document" -> ".docx";
+                default -> ".bin";
+            };
+        }
+        return ".bin";
+    }
+
+    /**
+     * Populates the AI suggestion badge, if the AI produced a
+     * recommendation for this appeal. Hidden entirely when there's
+     * no recommendation on file (e.g. older appeals filed before
+     * this feature existed, or the AI call failed at submit time).
+     *
+     * @param recommendation APPROVABLE / DENIABLE / UNCERTAIN, or null
+     * @param reasoning      short AI-generated reasoning, or null
+     */
+    private void displayAiSuggestion(String recommendation, String reasoning) {
+        if (aiSuggestionBox == null) {
+            return;
+        }
+        if (recommendation == null || recommendation.isBlank()) {
+            aiSuggestionBox.setVisible(false);
+            aiSuggestionBox.setManaged(false);
+            return;
+        }
+
+        String normalized = recommendation.trim().toUpperCase(Locale.ROOT);
+        aiSuggestionBox.getStyleClass().removeAll(
+                "aiApprovable", "aiDeniable", "aiUncertain");
+
+        String badgeText;
+        switch (normalized) {
+            case "APPROVABLE":
+                badgeText = "AI Suggestion: Approvable";
+                aiSuggestionBox.getStyleClass().add("aiApprovable");
+                break;
+            case "DENIABLE":
+                badgeText = "AI Suggestion: Deniable";
+                aiSuggestionBox.getStyleClass().add("aiDeniable");
+                break;
+            default:
+                badgeText = "AI Suggestion: Uncertain";
+                aiSuggestionBox.getStyleClass().add("aiUncertain");
+                break;
+        }
+
+        if (aiRecommendationLabel != null) {
+            aiRecommendationLabel.setText(badgeText);
+        }
+        if (aiReasoningLabel != null) {
+            aiReasoningLabel.setText(reasoning != null ? reasoning : "");
+        }
+
+        aiSuggestionBox.setVisible(true);
+        aiSuggestionBox.setManaged(true);
     }
 
     /**

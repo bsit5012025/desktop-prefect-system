@@ -16,9 +16,10 @@
                 <Label styleClass="boldLabel" text="Student ID: " />
                 <Label fx:id="studentIdLabel" styleClass="dataLabel"/>
             </HBox>
-            <HBox styleClass="labelRow">
+            <HBox alignment="CENTER_LEFT" styleClass="labelRow">
                 <Label styleClass="boldLabel" text="Name: " />
                 <Label fx:id="studentNameLabel" styleClass="dataLabel" />
+                <Label fx:id="editedBadge" managed="false" styleClass="editedBadge" text="Edited" visible="false" />
             </HBox>
 
             <VBox fx:id="expandedSection" managed="false" styleClass="expandedSection" visible="false">
@@ -30,11 +31,18 @@
                 <Label styleClass="boldLabel" text="Reason for Appeal: " />
                 <Label fx:id="reasonLabel" styleClass="reasonText" wrapText="true" />
 
+                <VBox fx:id="aiSuggestionBox" managed="false" styleClass="aiSuggestionBox" visible="false">
+                    <Label fx:id="aiRecommendationLabel" styleClass="aiSuggestionLabel" />
+                    <Label fx:id="aiReasoningLabel" styleClass="aiReasoningText" wrapText="true" />
+                </VBox>
+
+                <Button fx:id="viewLetterButton" managed="false" onAction="#onViewLetter" styleClass="viewLetterButton" text="View Letter" visible="false" />
+
                 <VBox spacing="5" styleClass="commentContainer">
                     <Label styleClass="boldLabel" text="Comment: " />
                     <TextArea fx:id="commentArea" editable="false" prefHeight="60.0"
                               styleClass="commentTextArea, readOnlyArea" wrapText="true"
-                               />
+                    />
                 </VBox>
             </VBox>
         </VBox>
