@@ -167,7 +167,7 @@ public class ApprovedRequestCardController {
             return;
         }
 
-        String normalized = recommendation.trim().toUpperCase();
+        String normalized = recommendation.trim().toUpperCase(Locale.ROOT);
         aiSuggestionBox.getStyleClass().removeAll(
                 "aiApprovable", "aiDeniable", "aiUncertain");
 
@@ -241,7 +241,8 @@ public class ApprovedRequestCardController {
             return;
         }
         if (deliveryMethod != null
-                && deliveryMethod.toUpperCase(Locale.ROOT).startsWith("EMAIL")) {
+                && deliveryMethod.toUpperCase(Locale.ROOT)
+                                 .startsWith("EMAIL")) {
             int sep = deliveryMethod.indexOf(':');
             String address = sep >= 0 ? deliveryMethod.substring(sep + 1) : "";
             deliveryLabel.setText(address.isEmpty()

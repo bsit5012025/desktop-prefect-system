@@ -241,7 +241,8 @@ public class DeniedRequestCardController {
             return;
         }
         if (deliveryMethod != null
-                && deliveryMethod.toUpperCase(Locale.ROOT).startsWith("EMAIL")) {
+                && deliveryMethod.toUpperCase(Locale.ROOT)
+                                 .startsWith("EMAIL")) {
             int sep = deliveryMethod.indexOf(':');
             String address = sep >= 0 ? deliveryMethod.substring(sep + 1) : "";
             deliveryLabel.setText(address.isEmpty()
