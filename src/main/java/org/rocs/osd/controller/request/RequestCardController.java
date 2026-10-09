@@ -267,7 +267,7 @@ public class RequestCardController {
             return;
         }
 
-        String normalized = recommendation.trim().toUpperCase();
+        String normalized = recommendation.trim().toUpperCase(Locale.ROOT);
         aiSuggestionBox.getStyleClass().removeAll(
                 "aiApprovable", "aiDeniable", "aiUncertain");
 
